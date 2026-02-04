@@ -1,0 +1,23 @@
+{
+  "name": "time-tracker",
+  "version": "1.0.0",
+  "description": "Compact time tracking app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.timetracker.app",
+    "productName": "Time Tracker",
+    "icon": "icon.ico",
+    "win": {
+      "target": "portable",
+      "icon": "icon.ico"
+    }
+  }
+}

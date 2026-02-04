@@ -5,3 +5,6 @@ Creates .exe at `dist/Time Tracker.exe`
 npm install
 npm run build
 ``` 
+
+<img width="213" height="42" alt="image" src="https://github.com/user-attachments/assets/b85c37b0-abfc-4de7-b84c-13d17ef19569" />
+<img width="319" height="278" alt="image" src="https://github.com/user-attachments/assets/df1e0f65-b833-4496-a349-f692ddd843c2" />

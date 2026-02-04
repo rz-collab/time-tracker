@@ -1,6 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
+// Suppress GPU cache errors
+app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+
 let mainWindow;
 
 function createWindow() {
@@ -15,6 +18,7 @@ function createWindow() {
     resizable: true,
     skipTaskbar: false,
     useContentSize: true,
+    maximizable: false,
     icon: path.join(__dirname, 'icon.ico'),
     webPreferences: {
       nodeIntegration: true,

@@ -13,7 +13,7 @@
       overflow: hidden;
       -webkit-app-region: drag;
     }
-    button, input { -webkit-app-region: no-drag; }
+    button, input, .no-drag { -webkit-app-region: no-drag; }
     @keyframes blink {
       0%, 50% { opacity: 1; }
       51%, 100% { opacity: 0.3; }
@@ -108,7 +108,7 @@
     
     function saveSession() {
       const newSession = {
-        id: Date.now(),
+        id: 'session_' + Date.now(),
         name: state.taskName.trim() || 'Untitled Task',
         duration: state.pendingSession.duration,
         startTime: state.pendingSession.startTime,
@@ -140,14 +140,17 @@
       updateWindowSize();
     }
     
-    function startEditing(session) {
-      state.editingSessionId = session.id;
-      state.editingName = session.name;
-      render();
-      setTimeout(() => {
-        const input = document.getElementById('edit-input');
-        if (input) input.focus();
-      }, 0);
+    function startEditing(sessionId) {
+      const session = state.sessions.find(s => s.id === sessionId);
+      if (session) {
+        state.editingSessionId = session.id;
+        state.editingName = session.name;
+        render();
+        setTimeout(() => {
+          const input = document.getElementById('edit-input');
+          if (input) input.focus();
+        }, 0);
+      }
     }
     
     function saveEditing() {
@@ -186,10 +189,10 @@
       if (window.require) {
         const { ipcRenderer } = window.require('electron');
         if (state.isCompact) {
-          ipcRenderer.send('resize-window', 220, 40);
+          ipcRenderer.send('resize-window', 220, 44);
         } else {
           // Calculate height based on state
-          let height = 190; // base height (title bar + timer + controls + toggle button)
+          let height = 220; // base height (title bar + timer + controls + toggle button + padding)
           if (state.showSessions && state.sessions.length > 0) {
             height += Math.min(state.sessions.length * 36, 160) + 10; // session items + border
           }
@@ -286,20 +289,20 @@
               ${state.sessions.map((session, index) => `
                 <div style="padding: 8px 16px; display: flex; align-items: center; gap: 8px; border-bottom: ${index < state.sessions.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none'};">
                   <div style="width: 5px; height: 5px; border-radius: 50%; background: #4ade80; flex-shrink: 0;"></div>
-                  <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; min-width: 0; overflow: hidden;">
                     ${state.editingSessionId === session.id ? `
                       <input id="edit-input" type="text" value="${state.editingName}" 
                         oninput="state.editingName=this.value"
                         onkeydown="if(event.key==='Enter')saveEditing();if(event.key==='Escape')cancelEditing();"
                         onblur="saveEditing()"
-                        style="flex: 1; padding: 2px 6px; font-size: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(74,222,128,0.5); border-radius: 3px; color: #e8e8f0; outline: none;">
+                        style="width: 100%; padding: 2px 6px; font-size: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(74,222,128,0.5); border-radius: 3px; color: #e8e8f0; outline: none; box-sizing: border-box;">
                     ` : `
-                      <span ondblclick="startEditing(state.sessions.find(s=>s.id===${session.id}))" style="color: #e8e8f0; font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: text; flex: 1;" title="Double-click to edit">${session.name}</span>
+                      <div class="no-drag" ondblclick="startEditing('${session.id}')" style="color: #e8e8f0; font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" title="Double-click to edit">${session.name}</div>
                     `}
-                    <span style="color: #6b6b8a; font-size: 10px; flex-shrink: 0;">${session.startTime}–${session.endTime}</span>
+                    <div style="color: #6b6b8a; font-size: 10px; margin-top: 2px;">${session.startTime}–${session.endTime}</div>
                   </div>
                   <div style="color: #a0a0b8; font-size: 11px; font-weight: 600; font-family: 'SF Mono', 'Consolas', monospace; flex-shrink: 0;">${formatDuration(session.duration)}</div>
-                  <button onclick="deleteSession(${session.id})" style="background: none; border: none; color: #6b6b8a; cursor: pointer; padding: 2px; font-size: 12px; opacity: 0.4;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.4">×</button>
+                  <button onclick="deleteSession('${session.id}')" style="background: none; border: none; color: #6b6b8a; cursor: pointer; padding: 2px; font-size: 12px; opacity: 0.4;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.4">×</button>
                 </div>
               `).join('')}
             </div>
@@ -343,6 +346,23 @@
     
     // Initial render
     render();
+    
+    // Make functions globally accessible for inline event handlers
+    window.startTimer = startTimer;
+    window.pauseTimer = pauseTimer;
+    window.stopTimer = stopTimer;
+    window.resetTimer = resetTimer;
+    window.saveSession = saveSession;
+    window.discardSession = discardSession;
+    window.deleteSession = deleteSession;
+    window.startEditing = startEditing;
+    window.saveEditing = saveEditing;
+    window.cancelEditing = cancelEditing;
+    window.toggleSessions = toggleSessions;
+    window.toggleCompact = toggleCompact;
+    window.minimizeWindow = minimizeWindow;
+    window.closeWindow = closeWindow;
+    window.state = state;
   </script>
 </body>
 </html>
